@@ -11,7 +11,6 @@ import random
 from scipy.stats import chi2
 from scipy import integrate 
 from sympy import factorial
-from datetime import datetime
 import math
 
 gamma = 0.99
@@ -23,6 +22,7 @@ z_gamma2 = z_gamma**2
 
 
 print('\n____________ЗАВДАННЯ 1____________')
+
 for n in (10**2, 10**3, 10**4):
     X = np.random.normal(0, 1, n)
     print(f'\nn = {n}')
@@ -51,18 +51,11 @@ for n in (10**2, 10**3, 10**4):
 
 
 def true_prob(u):
-    return math.exp(-u)*u**(M - 1)/((1 + u)*factorial(M - 1))
-
-def summ(eta, m):
-    res = 0
-    for i in range(m):
-        res += (eta**i/factorial(i))
-    return 1 - math.exp(-eta)*res
-
+    return math.exp(-u)*u**(m_ - 1)/((1 + u)*factorial(m_ - 1))
 
 
 def culc_prob(f, m, n = 2):
-    if f == f4 and m == 1:
+    if f == f3 and m == 1:
         print('Метод не застосовний!')
         return '-', '-'
     ksi = [random.expovariate(1) for i in range(m)]
@@ -77,45 +70,46 @@ def culc_prob(f, m, n = 2):
         sum_q += q
         sum_sq_q += q**2
         Q = sum_q/n
-        sigma = (sum_sq_q - n*Q**2)/(n - 1)
+        sigma = (sum_sq_q - sum_q**2/n)/(n - 1)
         if Q == 0:
             continue
-        if n >= (z_gamma2*sigma)/(epsilon2*Q**2) and n > 2:
+        if n >= (z_gamma2*sigma)/(epsilon2*Q**2) and n > 3:
             break
         n += 1
     return Q, n
 
 def f1(eta, ksi):
-    return 1 if eta > sum(ksi) else 0
+    return int(eta > sum(ksi))
 
 def f2(eta, ksi):
     return 1/(sum(ksi) + 1)
 
 def f3(eta, ksi):
-    return summ(eta, len(ksi))
-
-def f4(eta, ksi):
     s = sum(ksi[:-1])
     return s/((1 + s)*(len(ksi) - 1))
  
 
-M = 5
 print('\n____________ЗАВДАННЯ 2____________')
-print('\nA. Точне значення імовірності:')
-print('Q_m = ', integrate.quad(true_prob, 0, np.infty)[0])
-print('\nB. Метод Монте-Карло:')
-Q_m, n_ = culc_prob(f1, M)
-print('Q_m = ', Q_m)
-print('n* = ', n_)
-print('\nC. Метод 2:')
-Q_m, n_  = culc_prob(f2, M)
-print('Q_m = ', Q_m)
-print('n* = ', n_)
-print('\nC. Метод 3:')
-Q_m, n_  = culc_prob(f3, M)
-print('Q_m = ', Q_m)
-print('n* = ', n_)
-print('\nC. Метод 4:')
-Q_m, n_  = culc_prob(f4, M)
-print('Q_m = ', Q_m)
-print('n* = ', n_)
+
+for m_ in(1, 50, 100):
+    print('\nm = ', m_)
+    if m_ < 60:
+        print('\nA. Точне значення імовірності:')
+        print('Q_m = ', integrate.quad(true_prob, 0, np.infty)[0])
+    print('\nB. Метод 1:')
+    start_time = datetime.now()
+    Q_m, n_, disp = culc_prob(f1, m_)
+    print('Q_m = ', Q_m)
+    print('n* = ', n_)
+    print('sigma = ', disp)
+    print(datetime.now() - start_time)
+    print('\nC. Метод 2:')
+    Q_m, n_, disp  = culc_prob(f2, m_)
+    print('Q_m = ', Q_m)
+    print('n* = ', n_)
+    print('sigma = ', disp)
+    print('\nC. Метод 3:')
+    Q_m, n_, disp  = culc_prob(f3, m_)
+    print('Q_m = ', Q_m)
+    print('n* = ', n_)
+    print('sigma = ', disp)
